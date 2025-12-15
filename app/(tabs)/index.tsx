@@ -7,12 +7,9 @@ import {
   View,
 } from "react-native";
 
-import { CallButton } from "@/components/home/CallButton";
-import { CategoryFilter } from "@/components/home/CategoryFilter";
 import { HomeHeader } from "@/components/home/HomeHeader";
-import { PopularServices } from "@/components/home/PopularServices";
 import { SearchBar } from "@/components/home/SearchBar";
-import { SeeMoreSection } from "@/components/home/SeeMoreSection";
+import { ServiceGrid } from "@/components/home/ServiceGrid";
 
 export default function HomeScreen() {
   return (
@@ -22,11 +19,11 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}>
           <HomeHeader />
+
           <SearchBar />
-          <PopularServices />
-          <CategoryFilter />
-          <SeeMoreSection />
-          <CallButton />
+
+          {/* Replaced previous sections with the Grid View */}
+          <ServiceGrid />
         </ScrollView>
       </SafeAreaView>
     </View>
