@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
 import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
 
 const { width } = Dimensions.get("window");
@@ -10,21 +11,40 @@ const services = [
     title: "Laundry",
     subtitle: "washing and Ironing",
     image:
-      "https://images.unsplash.com/photo-1545173168-9f1947eebb8f?q=80&w=400",
+      "https://images.unsplash.com/photo-1517677208171-0bc6799a4267?q=80&w=400",
+    route: "/service-options", // Links to the new Options page
   },
   {
     id: 2,
-    title: "Construction",
+    title: "Car wash",
     subtitle: "Interior and exterior",
     image:
       "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?q=80&w=400",
+    route: "/service-detail",
   },
   {
     id: 3,
-    title: "Maintenance",
-    subtitle: "Home repairs",
+    title: "Gardening",
+    subtitle: "Compound work, digging",
+    image:
+      "https://images.unsplash.com/photo-1615811361269-89432d83663d?q=80&w=400",
+    route: "/service-detail",
+  },
+  {
+    id: 4,
+    title: "construction",
+    subtitle: "Site workers",
+    image:
+      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=400",
+    route: "/service-detail",
+  },
+  {
+    id: 5,
+    title: "House Help",
+    subtitle: "Maids and house boys",
     image:
       "https://images.unsplash.com/photo-1581578731117-104f2a41272c?q=80&w=400",
+    route: "/service-detail",
   },
 ];
 
@@ -40,23 +60,28 @@ export function SeeMoreSection() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
         {services.map((service) => (
-          <View key={service.id} style={styles.card}>
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: service.image }} style={styles.image} />
-              <View style={styles.iconOverlay}>
-                <Ionicons name="bookmark-outline" size={16} color="white" />
+          <Link
+            key={service.id}
+            href={service.route as any} // Cast to any to avoid strict route typing issues during dev
+            asChild>
+            <View key={service.id} style={styles.card}>
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: service.image }} style={styles.image} />
+                <View style={styles.iconOverlay}>
+                  <Ionicons name="bookmark-outline" size={16} color="white" />
+                </View>
+              </View>
+
+              <View style={styles.cardContent}>
+                <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                  {service.title}
+                </ThemedText>
+                <ThemedText style={styles.cardSubtitle}>
+                  {service.subtitle}
+                </ThemedText>
               </View>
             </View>
-
-            <View style={styles.cardContent}>
-              <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                {service.title}
-              </ThemedText>
-              <ThemedText style={styles.cardSubtitle}>
-                {service.subtitle}
-              </ThemedText>
-            </View>
-          </View>
+          </Link>
         ))}
       </ScrollView>
     </View>
