@@ -38,7 +38,7 @@ export default function HomeScreen() {
             onSelectCategory={setSelectedCategory}
           />
 
-          {/* 4. Pass State down to Content Section */}
+          {/* 4. Pass State down to Content Section a */}
           <SeeMoreSection selectedCategory={selectedCategory} />
 
           <CallButton />
