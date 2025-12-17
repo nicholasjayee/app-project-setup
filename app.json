@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "my-new-app",
-    "slug": "my-new-app",
+    "slug": "make-life-easy",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -43,6 +43,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dd9c1143-4ef2-45ae-b004-a288d915565d"
+      }
+    },
+    "owner": "kyusa-solutions"
   }
 }
