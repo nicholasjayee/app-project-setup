@@ -1,3 +1,4 @@
+import { useState } from "react"; // 1. Import useState
 import {
   Platform,
   SafeAreaView,
@@ -15,6 +16,9 @@ import { SearchBar } from "@/components/home/SearchBar";
 import { SeeMoreSection } from "@/components/home/SeeMoreSection";
 
 export default function HomeScreen() {
+  // 2. Lift State Up: Manage category selection here
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
   return (
     <View style={styles.mainContainer}>
       <SafeAreaView style={styles.safeArea}>
@@ -22,11 +26,21 @@ export default function HomeScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}>
           <HomeHeader />
+
           <SearchBar />
-          {/* <ServiceGrid /> */}
+
+          {/* Popular Services usually stays static or uses its own logic */}
           <PopularServices />
-          <CategoryFilter />
-          <SeeMoreSection />
+
+          {/* 3. Pass State down to Filter */}
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+
+          {/* 4. Pass State down to Content Section */}
+          <SeeMoreSection selectedCategory={selectedCategory} />
+
           <CallButton />
         </ScrollView>
       </SafeAreaView>
@@ -37,7 +51,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor: "#F8F9FB", // The specific light grey from the design
+    backgroundColor: "#F8F9FB",
   },
   safeArea: {
     flex: 1,

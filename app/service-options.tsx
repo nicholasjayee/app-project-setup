@@ -1,7 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
+import { SERVICES_DATA } from "@/constants/services-data";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
+import { Link, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
+  Image,
   ImageBackground,
   Platform,
   SafeAreaView,
@@ -12,13 +14,20 @@ import {
   View,
 } from "react-native";
 
-// Components we will create next
-import { SelectionTitle } from "@/components/service-options/SelectionTitle";
-import { ServiceHeaderProfile } from "@/components/service-options/ServiceHeaderProfile";
-import { ServiceOptionList } from "@/components/service-options/ServiceOptionList";
-
 export default function ServiceOptionsScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
+
+  // Find the parent service
+  const service = SERVICES_DATA.find((s) => s.id === id);
+
+  if (!service) {
+    return (
+      <View style={styles.center}>
+        <ThemedText>Service not found</ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -29,11 +38,9 @@ export default function ServiceOptionsScreen() {
         backgroundColor="transparent"
       />
 
-      {/* Shared Header Layout */}
+      {/* Header Image */}
       <ImageBackground
-        source={{
-          uri: "https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=1000",
-        }}
+        source={{ uri: service.coverImage }}
         style={styles.headerImage}
         resizeMode="cover">
         <SafeAreaView style={styles.headerSafeArea}>
@@ -53,13 +60,54 @@ export default function ServiceOptionsScreen() {
       <View style={styles.contentSheet}>
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-          bounces={true}>
-          <ServiceHeaderProfile />
+          contentContainerStyle={styles.scrollContent}>
+          {/* Service Identity Section (Thumbnail + Title) */}
+          <View style={styles.identityRow}>
+            <Image
+              source={{ uri: service.thumbnail }}
+              style={styles.thumbnail}
+            />
+            <View>
+              <ThemedText type="defaultSemiBold" style={styles.serviceTitle}>
+                {service.title}
+              </ThemedText>
+              <ThemedText style={styles.serviceSubtitle}>
+                {service.subtitle}
+              </ThemedText>
+            </View>
+          </View>
 
-          <SelectionTitle />
+          {/* "How can we help you?" Box */}
+          <View style={styles.helpBox}>
+            <ThemedText style={styles.helpText}>
+              How can we help you ?
+            </ThemedText>
+          </View>
 
-          <ServiceOptionList />
+          {/* Options List */}
+          <View style={styles.listContainer}>
+            {service.subCategories?.map((option) => (
+              <Link
+                key={option.id}
+                href={{
+                  pathname: "/service-detail",
+                  params: { id: service.id, optionId: option.id },
+                }}
+                asChild>
+                <TouchableOpacity style={styles.optionCard} activeOpacity={0.7}>
+                  <ThemedText style={styles.optionName}>
+                    {option.name}
+                  </ThemedText>
+                  <ThemedText style={styles.optionDesc}>
+                    {option.description}
+                  </ThemedText>
+                </TouchableOpacity>
+              </Link>
+            ))}
+          </View>
+
+          {/* Bottom Padding */}
+          <View style={{ height: 20 }} />
         </ScrollView>
       </View>
     </View>
@@ -71,9 +119,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FB",
   },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   headerImage: {
     width: "100%",
-    height: 280, // Slightly shorter than the detail page
+    height: 250, // Height based on image ratio
   },
   headerSafeArea: {
     flex: 1,
@@ -100,11 +153,74 @@ const styles = StyleSheet.create({
     marginTop: -40,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    paddingHorizontal: 20,
-    paddingTop: 30,
-    overflow: "hidden", // Ensures scroll view respects corners
+    overflow: "hidden",
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingTop: 30,
+    paddingHorizontal: 20,
+  },
+
+  // Identity Section
+  identityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 25,
+    gap: 15,
+  },
+  thumbnail: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    backgroundColor: "#eee",
+  },
+  serviceTitle: {
+    fontSize: 18,
+    color: "#000",
+    marginBottom: 4,
+  },
+  serviceSubtitle: {
+    fontSize: 13,
+    color: "#666",
+  },
+
+  // Help Box
+  helpBox: {
+    borderWidth: 1.5,
+    borderColor: "#005D63", // Teal Border
+    borderRadius: 12,
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 25,
+    backgroundColor: "#FFFFFF",
+  },
+  helpText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#005D63", // Teal Text
+  },
+
+  // List Items
+  listContainer: {
+    gap: 12,
+  },
+  optionCard: {
+    backgroundColor: "#E8EEF1", // Light Grey/Blue background from image
+    borderRadius: 8,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  optionName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#2C3E50", // Dark Blue-ish Grey
+  },
+  optionDesc: {
+    fontSize: 14,
+    color: "#7F8C8D", // Grey
+    fontWeight: "400",
   },
 });

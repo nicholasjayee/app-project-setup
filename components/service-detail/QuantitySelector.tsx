@@ -1,31 +1,45 @@
 import { ThemedText } from "@/components/themed-text";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
-export function QuantitySelector() {
+interface QuantitySelectorProps {
+  title: string;
+  unitName: string; // e.g., "Cars"
+  quantity: number;
+  image: string; // URL for the thumbnail
+  onIncrease: () => void;
+  onDecrease: () => void;
+}
+
+export function QuantitySelector({
+  title,
+  unitName,
+  quantity,
+  image,
+  onIncrease,
+  onDecrease,
+}: QuantitySelectorProps) {
   return (
     <View style={styles.container}>
+      {/* Thumbnail Image */}
       <View style={styles.imageWrapper}>
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?q=80&w=200",
-          }}
-          style={styles.image}
-        />
+        <Image source={{ uri: image }} style={styles.image} />
       </View>
 
       <View style={styles.details}>
-        <ThemedText style={styles.title}>Laundry staff</ThemedText>
-        <ThemedText style={styles.subtitle}>Standard Cleaning</ThemedText>
+        <ThemedText type="defaultSemiBold" style={styles.title}>
+          {title}
+        </ThemedText>
+        <ThemedText style={styles.subtitle}>Number of {unitName}s</ThemedText>
       </View>
 
       <View style={styles.counterContainer}>
-        <TouchableOpacity style={styles.counterBtn}>
+        <TouchableOpacity onPress={onDecrease} style={styles.counterBtn}>
           <ThemedText style={styles.counterSymbol}>-</ThemedText>
         </TouchableOpacity>
 
-        <ThemedText style={styles.countText}>1</ThemedText>
+        <ThemedText style={styles.countText}>{quantity}</ThemedText>
 
-        <TouchableOpacity style={styles.counterBtn}>
+        <TouchableOpacity onPress={onIncrease} style={styles.counterBtn}>
           <ThemedText style={styles.counterSymbol}>+</ThemedText>
         </TouchableOpacity>
       </View>
@@ -37,11 +51,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 5,
+    paddingVertical: 10,
   },
   imageWrapper: {
     padding: 3,
-    backgroundColor: "#F0F5F5",
+    backgroundColor: "#F0F5F5", // Light ring effect
     borderRadius: 12,
     marginRight: 15,
   },
@@ -49,16 +63,15 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 10,
-    backgroundColor: "#C8E6C9",
+    backgroundColor: "#eee",
   },
   details: {
     flex: 1,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
     color: "#1A1A1A",
-    marginBottom: 2,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,

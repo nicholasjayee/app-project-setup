@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { Ionicons } from "@expo/vector-icons";
+import { Link, useRouter } from "expo-router";
 import {
   Image,
   Platform,
@@ -12,6 +13,14 @@ import {
 } from "react-native";
 
 export default function ProfileScreen() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // In a real app, clear auth tokens here
+    console.log("Logging out...");
+    // router.replace("/"); // Go back to login
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -32,9 +41,11 @@ export default function ProfileScreen() {
                 }}
                 style={styles.avatar}
               />
-              <TouchableOpacity style={styles.editIcon}>
-                <Ionicons name="pencil" size={16} color="#FFFFFF" />
-              </TouchableOpacity>
+              <Link href="/profile/account" asChild>
+                <TouchableOpacity style={styles.editIcon}>
+                  <Ionicons name="pencil" size={16} color="#FFFFFF" />
+                </TouchableOpacity>
+              </Link>
             </View>
             <ThemedText style={styles.userName}>Martine</ThemedText>
             <ThemedText style={styles.userEmail}>
@@ -44,18 +55,35 @@ export default function ProfileScreen() {
 
           {/* Menu Options */}
           <View style={styles.menuContainer}>
-            <MenuOption icon="person-outline" label="My Account" />
-            <MenuOption icon="card-outline" label="Payment Methods" />
-            <MenuOption icon="notifications-outline" label="Notifications" />
+            <MenuOption
+              icon="person-outline"
+              label="My Account"
+              route="/profile/account"
+            />
+            <MenuOption
+              icon="card-outline"
+              label="Payment Methods"
+              route="/profile/payments"
+            />
+            <MenuOption
+              icon="notifications-outline"
+              label="Notifications"
+              route="/profile/notifications"
+            />
             <MenuOption
               icon="shield-checkmark-outline"
               label="Privacy & Security"
+              route="/profile/privacy"
             />
-            <MenuOption icon="help-circle-outline" label="Help & Support" />
+            <MenuOption
+              icon="help-circle-outline"
+              label="Help & Support"
+              route="/profile/help"
+            />
           </View>
 
           {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#FF4D4D" />
             <ThemedText style={styles.logoutText}>Log Out</ThemedText>
           </TouchableOpacity>
@@ -65,18 +93,28 @@ export default function ProfileScreen() {
   );
 }
 
-// Helper Component for Menu Rows
-function MenuOption({ icon, label }: { icon: any; label: string }) {
+// Helper Component for Menu Rows with Navigation
+function MenuOption({
+  icon,
+  label,
+  route,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  route: string;
+}) {
   return (
-    <TouchableOpacity style={styles.menuRow}>
-      <View style={styles.menuLeft}>
-        <View style={styles.iconBox}>
-          <Ionicons name={icon} size={22} color="#005D63" />
+    <Link href={route as any} asChild>
+      <TouchableOpacity style={styles.menuRow}>
+        <View style={styles.menuLeft}>
+          <View style={styles.iconBox}>
+            <Ionicons name={icon} size={22} color="#005D63" />
+          </View>
+          <ThemedText style={styles.menuLabel}>{label}</ThemedText>
         </View>
-        <ThemedText style={styles.menuLabel}>{label}</ThemedText>
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-    </TouchableOpacity>
+        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+      </TouchableOpacity>
+    </Link>
   );
 }
 
@@ -119,7 +157,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#005D63",
+    backgroundColor: "#005D63", // Deep Teal
     padding: 8,
     borderRadius: 20,
     borderWidth: 3,
@@ -164,7 +202,7 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 36,
     height: 36,
-    backgroundColor: "#E8F3F1",
+    backgroundColor: "#E8F3F1", // Light Teal
     borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
@@ -181,7 +219,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: "#FFE5E5",
+    backgroundColor: "#FFE5E5", // Light Red
     borderRadius: 12,
     gap: 10,
   },

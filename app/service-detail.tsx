@@ -1,6 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
+import { SERVICES_DATA } from "@/constants/services-data";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   ImageBackground,
   Platform,
@@ -12,7 +14,7 @@ import {
   View,
 } from "react-native";
 
-// Components we will update next one by one
+// Components
 import { OptionsToggle } from "@/components/service-detail/OptionsToggle";
 import { PaymentSummary } from "@/components/service-detail/PaymentSummary";
 import { QuantitySelector } from "@/components/service-detail/QuantitySelector";
@@ -21,6 +23,43 @@ import { SubmitButton } from "@/components/service-detail/SubmitButton";
 
 export default function ServiceDetailScreen() {
   const router = useRouter();
+  const { id, optionId } = useLocalSearchParams();
+
+  // 1. Find the Parent Service (e.g. Car Wash)
+  const parentService = SERVICES_DATA.find((s) => s.id === id);
+
+  if (!parentService) {
+    return (
+      <View style={styles.center}>
+        <ThemedText>Service not found.</ThemedText>
+      </View>
+    );
+  }
+
+  // 2. Logic: Determine if we are showing the main service or a specific sub-option
+  let activeService = parentService;
+
+  if (optionId && parentService.subCategories) {
+    const selectedOption = parentService.subCategories.find(
+      (opt) => opt.id === optionId,
+    );
+
+    if (selectedOption) {
+      activeService = {
+        ...parentService,
+        title: selectedOption.name, // e.g. "Exterior wash"
+        subtitle: "Tewekoya, Make life Easy", // Matching screenshot subtitle
+        pricing: {
+          ...parentService.pricing,
+          oneTimePrice: selectedOption.price,
+        },
+      };
+    }
+  }
+
+  // 3. State Management
+  const [quantity, setQuantity] = useState(1);
+  const [isPickup, setIsPickup] = useState(true); // Default to Pickup as per screenshot
 
   return (
     <View style={styles.container}>
@@ -31,53 +70,68 @@ export default function ServiceDetailScreen() {
         backgroundColor="transparent"
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-        bounces={true} // Native iOS bounce effect
-      >
-        {/* Header Section */}
-        <ImageBackground
-          source={{
-            uri: "https://images.unsplash.com/photo-1563453392212-326f5e854473?q=80&w=1000",
-          }}
-          style={styles.headerImage}
-          resizeMode="cover">
-          <SafeAreaView style={styles.headerSafeArea}>
-            <View style={styles.headerNav}>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={styles.backButton}>
-                <Ionicons name="chevron-back" size={28} color="white" />
-              </TouchableOpacity>
-              <ThemedText style={styles.headerTitle}>Service Detail</ThemedText>
-              <View style={{ width: 28 }} />
-            </View>
-          </SafeAreaView>
-        </ImageBackground>
+      {/* Header Image - Always show the Parent Service Cover */}
+      <ImageBackground
+        source={{ uri: parentService.coverImage }}
+        style={styles.headerImage}
+        resizeMode="cover">
+        <SafeAreaView style={styles.headerSafeArea}>
+          <View style={styles.headerNav}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}>
+              <Ionicons name="chevron-back" size={28} color="white" />
+            </TouchableOpacity>
 
-        {/* White Content Sheet */}
-        <View style={styles.contentSheet}>
-          <ServiceInfo />
+            {/* Header Title is usually the Category (Car Wash) */}
+            <ThemedText style={styles.headerTitle}>
+              {parentService.title}
+            </ThemedText>
 
-          <OptionsToggle />
+            <View style={{ width: 28 }} />
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+
+      {/* Content Sheet */}
+      <View style={styles.contentSheet}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollInner}>
+          {/* Service Info (Title: Exterior Wash) */}
+          <ServiceInfo service={activeService} />
+
+          {/* Toggle: Pickup vs In House */}
+          <OptionsToggle isPickup={isPickup} onToggle={setIsPickup} />
 
           <View style={styles.divider} />
 
-          <QuantitySelector />
+          {/* Quantity Selector with Thumbnail */}
+          <QuantitySelector
+            title={activeService.title}
+            unitName={activeService.pricing.unitName}
+            image={activeService.thumbnail}
+            quantity={quantity}
+            onIncrease={() => setQuantity((q) => q + 1)}
+            onDecrease={() => setQuantity((q) => (q > 1 ? q - 1 : 1))}
+          />
 
           <View style={styles.divider} />
 
-          <PaymentSummary />
+          {/* Totals with Pickup Fee Logic */}
+          <PaymentSummary
+            pricing={activeService.pricing}
+            quantity={quantity}
+            isPickup={isPickup}
+          />
 
-          {/* Spacer to ensure scrolling room at bottom */}
           <View style={{ height: 20 }} />
 
           <View style={styles.footer}>
-            <SubmitButton />
+            <SubmitButton onPress={() => console.log("Booking Submitted")} />
           </View>
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -87,13 +141,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8F9FB",
   },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   headerImage: {
     width: "100%",
-    height: 320, // Taller header to match design
+    height: 300, // Taller header
   },
   headerSafeArea: {
     flex: 1,
@@ -115,19 +170,22 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   contentSheet: {
+    flex: 1,
     backgroundColor: "#FFFFFF",
-    marginTop: -50, // Negative margin to overlap image
+    marginTop: -40, // Negative margin to overlap
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
+    overflow: "hidden",
+  },
+  scrollInner: {
     paddingHorizontal: 25,
     paddingTop: 30,
-    paddingBottom: 20,
-    minHeight: 500, // Ensure it takes up space even if empty
+    paddingBottom: 40,
   },
   divider: {
     height: 1,
     backgroundColor: "#EEEEEE",
-    marginVertical: 25,
+    marginVertical: 20,
   },
   footer: {
     marginTop: 10,

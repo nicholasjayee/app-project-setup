@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { SERVICES_DATA } from "@/constants/services-data";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import {
@@ -13,6 +14,8 @@ import {
 const { width } = Dimensions.get("window");
 
 export function PopularServices() {
+  const popularList = SERVICES_DATA.slice(0, 4);
+
   return (
     <View style={styles.container}>
       <ThemedText type="subtitle" style={styles.sectionTitle}>
@@ -23,75 +26,99 @@ export function PopularServices() {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {/* Card 1: House Cleaning (Dark Teal Theme) */}
-        <Link href="/service-detail" asChild>
-          <TouchableOpacity
-            // FIX: Flatten the array so it works on Web
-            style={StyleSheet.flatten([styles.card, styles.cardActive])}
-            activeOpacity={0.9}>
-            <View style={styles.cardHeader}>
-              <Image
-                source={{
-                  uri: "https://images.unsplash.com/photo-1581578731117-104f2a41272c?q=80&w=200",
-                }}
-                style={styles.serviceImage}
-              />
-              <ThemedText style={styles.topTagText}>kyusa routine</ThemedText>
-            </View>
+        {popularList.map((service, index) => {
+          const isFeatured = index === 0;
 
-            <View style={styles.textContainer}>
-              <ThemedText type="defaultSemiBold" style={styles.textWhite}>
-                House Cleaning
-              </ThemedText>
-              <ThemedText style={styles.subTextWhite}>
-                Tewekoya, Make life Easy
-              </ThemedText>
-            </View>
+          // Route Logic
+          const routePath = service.hasSubCategories
+            ? "/service-options"
+            : "/service-detail";
 
-            <View style={styles.tagsRow}>
-              <View style={styles.tagBtnWhite}>
-                <ThemedText style={styles.tagTextTeal}>Subscription</ThemedText>
-              </View>
-              <View style={styles.tagBtnWhite}>
-                <ThemedText style={styles.tagTextTeal}>Onetime Off</ThemedText>
-              </View>
-            </View>
+          // Style Logic
+          const cardStyle = isFeatured
+            ? styles.cardActive
+            : styles.cardInactive;
+          const titleColor = isFeatured ? styles.textWhite : styles.textDark;
+          const subTextColor = isFeatured
+            ? styles.subTextWhite
+            : styles.subTextDark;
+          const tagBg = isFeatured
+            ? styles.tagBtnWhite
+            : styles.tagBtnLightTeal;
 
-            <Ionicons
-              name="bookmark-outline"
-              size={22}
-              color="white"
-              style={styles.bookmark}
-            />
-          </TouchableOpacity>
-        </Link>
+          // Use explicit style object for tags to avoid potential array issues
+          const tagTextStyle = styles.tagTextTeal;
 
-        {/* Card 2: Laundry (White Theme) */}
-        <View style={StyleSheet.flatten([styles.card, styles.cardInactive])}>
-          <View style={styles.cardHeader}>
-            <Image
-              source={{
-                uri: "https://images.unsplash.com/photo-1582735689369-c613c66e5aa1?q=80&w=200",
+          return (
+            <Link
+              key={service.id}
+              href={{
+                pathname: routePath,
+                params: { id: service.id },
               }}
-              style={styles.serviceImage}
-            />
-          </View>
+              asChild>
+              <TouchableOpacity
+                // FIX: Use StyleSheet.flatten to merge the array into a single object for Web compatibility
+                style={StyleSheet.flatten([styles.card, cardStyle])}
+                activeOpacity={0.9}>
+                {/* Header: Image & Tag */}
+                <View style={styles.cardHeader}>
+                  <Image
+                    source={{ uri: service.thumbnail }}
+                    style={styles.serviceImage}
+                  />
+                  {isFeatured && (
+                    <ThemedText style={styles.topTagText}>
+                      kyusa routine
+                    </ThemedText>
+                  )}
+                </View>
 
-          <View style={styles.textContainer}>
-            <ThemedText type="defaultSemiBold" style={styles.textDark}>
-              Laundry
-            </ThemedText>
-            <ThemedText style={styles.subTextDark}>
-              focused on the t...
-            </ThemedText>
-          </View>
+                {/* Text Content */}
+                <View style={styles.textContainer}>
+                  {/* FIX: Flatten text styles as well */}
+                  <ThemedText
+                    type="defaultSemiBold"
+                    style={StyleSheet.flatten([
+                      styles.serviceTitle,
+                      titleColor,
+                    ])}
+                    numberOfLines={1}>
+                    {service.title}
+                  </ThemedText>
+                  <ThemedText
+                    style={StyleSheet.flatten([
+                      styles.serviceSubtitle,
+                      subTextColor,
+                    ])}
+                    numberOfLines={1}>
+                    {service.subtitle}
+                  </ThemedText>
+                </View>
 
-          <View style={styles.tagsRow}>
-            <View style={styles.tagBtnLightTeal}>
-              <ThemedText style={styles.tagTextTeal}>Subscription</ThemedText>
-            </View>
-          </View>
-        </View>
+                {/* Tags Row */}
+                <View style={styles.tagsRow}>
+                  {service.pricing.subscriptionPrice > 0 && (
+                    <View style={tagBg}>
+                      <ThemedText style={tagTextStyle}>Subscription</ThemedText>
+                    </View>
+                  )}
+
+                  <View style={tagBg}>
+                    <ThemedText style={tagTextStyle}>One-time</ThemedText>
+                  </View>
+                </View>
+
+                <Ionicons
+                  name="bookmark-outline"
+                  size={22}
+                  color={isFeatured ? "white" : "#9CA3AF"}
+                  style={styles.bookmark}
+                />
+              </TouchableOpacity>
+            </Link>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -108,7 +135,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingRight: 20,
-    paddingBottom: 15, // Space for shadows
+    paddingBottom: 15,
   },
   card: {
     width: width * 0.72,
@@ -117,7 +144,6 @@ const styles = StyleSheet.create({
     padding: 18,
     marginRight: 16,
     justifyContent: "space-between",
-    // Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
@@ -125,7 +151,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   cardActive: {
-    backgroundColor: "#1F6C75", // Brand Teal
+    backgroundColor: "#005D63",
   },
   cardInactive: {
     backgroundColor: "#FFFFFF",
@@ -139,36 +165,34 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 10,
+    backgroundColor: "#eee",
   },
   topTagText: {
     color: "rgba(255,255,255,0.7)",
     fontSize: 12,
   },
-
-  // Text Area
   textContainer: {
     marginTop: 5,
   },
-  textWhite: {
-    color: "#FFFFFF",
+  serviceTitle: {
     fontSize: 18,
     marginBottom: 4,
+  },
+  serviceSubtitle: {
+    fontSize: 13,
+  },
+  textWhite: {
+    color: "#FFFFFF",
   },
   subTextWhite: {
     color: "rgba(255,255,255,0.85)",
-    fontSize: 13,
   },
   textDark: {
     color: "#1A1A1A",
-    fontSize: 18,
-    marginBottom: 4,
   },
   subTextDark: {
     color: "#9CA3AF",
-    fontSize: 13,
   },
-
-  // Buttons/Tags
   tagsRow: {
     flexDirection: "row",
     gap: 8,
@@ -181,7 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   tagBtnLightTeal: {
-    backgroundColor: "#E0F2F1", // Very light teal
+    backgroundColor: "#E0F2F1",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -189,9 +213,8 @@ const styles = StyleSheet.create({
   tagTextTeal: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#1F6C75",
+    color: "#005D63",
   },
-
   bookmark: {
     position: "absolute",
     bottom: 18,

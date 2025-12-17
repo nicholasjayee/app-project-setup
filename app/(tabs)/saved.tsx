@@ -1,5 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
+import { SERVICES_DATA } from "@/constants/services-data"; // Import Data
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { useState } from "react";
 import {
   FlatList,
   Image,
@@ -11,27 +14,19 @@ import {
   View,
 } from "react-native";
 
-// Sample data for saved items
-const savedItems = [
-  {
-    id: "1",
-    title: "House Cleaning",
-    subtitle: "Tewekoya, Make life Easy",
-    image:
-      "https://images.unsplash.com/photo-1581578731117-104f2a41272c?q=80&w=200",
-    tag: "Subscription",
-  },
-  {
-    id: "2",
-    title: "Laundry",
-    subtitle: "Washing and Ironing",
-    image:
-      "https://images.unsplash.com/photo-1545173168-9f1947eebb8f?q=80&w=200",
-    tag: "One time",
-  },
-];
-
 export default function SavedScreen() {
+  // Simulate a list of saved IDs. In a real app, this comes from a database or storage.
+  const [savedIds, setSavedIds] = useState<string[]>(["1", "2", "5"]);
+
+  // Filter the full data to get only saved items
+  const savedServices = SERVICES_DATA.filter((service) =>
+    savedIds.includes(service.id),
+  );
+
+  const handleRemove = (id: string) => {
+    setSavedIds((prev) => prev.filter((item) => item !== id));
+  };
+
   return (
     <View style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -42,29 +37,70 @@ export default function SavedScreen() {
         </View>
 
         <FlatList
-          data={savedItems}
+          data={savedServices}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Image source={{ uri: item.image }} style={styles.image} />
-
-              <View style={styles.cardContent}>
-                <ThemedText type="defaultSemiBold" style={styles.title}>
-                  {item.title}
-                </ThemedText>
-                <ThemedText style={styles.subtitle}>{item.subtitle}</ThemedText>
-
-                <View style={styles.tagContainer}>
-                  <ThemedText style={styles.tagText}>{item.tag}</ThemedText>
-                </View>
-              </View>
-
-              <TouchableOpacity style={styles.actionBtn}>
-                <Ionicons name="bookmark" size={24} color="#005D63" />
-              </TouchableOpacity>
+          // Empty State Logic
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="bookmark-outline" size={64} color="#ccc" />
+              <ThemedText style={styles.emptyText}>
+                No saved services yet.
+              </ThemedText>
             </View>
-          )}
+          }
+          renderItem={({ item }) => {
+            // Determine Route: Options vs Detail
+            const routePath = item.hasSubCategories
+              ? "/service-options"
+              : "/service-detail";
+
+            return (
+              <Link
+                href={{
+                  pathname: routePath,
+                  params: { id: item.id },
+                }}
+                asChild>
+                <TouchableOpacity style={styles.card} activeOpacity={0.7}>
+                  <Image
+                    source={{ uri: item.thumbnail }}
+                    style={styles.image}
+                  />
+
+                  <View style={styles.cardContent}>
+                    <ThemedText type="defaultSemiBold" style={styles.title}>
+                      {item.title}
+                    </ThemedText>
+                    <ThemedText style={styles.subtitle} numberOfLines={1}>
+                      {item.subtitle}
+                    </ThemedText>
+
+                    <View style={styles.tagContainer}>
+                      <ThemedText style={styles.tagText}>
+                        {/* Dynamic Tag: Show 'Subscription' if available, else Price */}
+                        {item.pricing.subscriptionPrice > 0
+                          ? "Subscription available"
+                          : `${item.pricing.oneTimePrice.toLocaleString()} ${
+                              item.pricing.currencySymbol
+                            }`}
+                      </ThemedText>
+                    </View>
+                  </View>
+
+                  {/* Bookmark Button (Independent Click) */}
+                  <TouchableOpacity
+                    style={styles.actionBtn}
+                    onPress={(e) => {
+                      // Stop propagation usually tricky in RN, but distinct touchable works
+                      handleRemove(item.id);
+                    }}>
+                    <Ionicons name="bookmark" size={24} color="#005D63" />
+                  </TouchableOpacity>
+                </TouchableOpacity>
+              </Link>
+            );
+          }}
         />
       </SafeAreaView>
     </View>
@@ -93,6 +129,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+    paddingBottom: 100, // Space for tab bar
   },
   card: {
     flexDirection: "row",
@@ -142,5 +179,16 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     padding: 10,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 100,
+    opacity: 0.5,
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#888",
   },
 });

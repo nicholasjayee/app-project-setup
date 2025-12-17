@@ -1,10 +1,17 @@
 import { ThemedText } from "@/components/themed-text";
 import { StyleSheet, TouchableOpacity } from "react-native";
 
-export function SubmitButton() {
+interface SubmitButtonProps {
+  onPress?: () => void;
+}
+
+export function SubmitButton({ onPress }: SubmitButtonProps) {
   return (
-    <TouchableOpacity style={styles.button} activeOpacity={0.8}>
-      <ThemedText style={styles.text}>Submit</ThemedText>
+    <TouchableOpacity
+      style={styles.button}
+      activeOpacity={0.8}
+      onPress={onPress}>
+      <ThemedText style={styles.text}>Book Service</ThemedText>
     </TouchableOpacity>
   );
 }
@@ -17,6 +24,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     marginBottom: 20, // Bottom safety margin
+    // Shadow
+    shadowColor: "#005D63",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   text: {
     color: "#FFFFFF",

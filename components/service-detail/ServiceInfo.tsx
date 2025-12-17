@@ -1,33 +1,41 @@
 import { ThemedText } from "@/components/themed-text";
+import { ServiceData } from "@/constants/services-data"; // Import the Type
 import { Image, StyleSheet, View } from "react-native";
 
-export function ServiceInfo() {
+interface ServiceInfoProps {
+  service: ServiceData;
+}
+
+export function ServiceInfo({ service }: ServiceInfoProps) {
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
-        {/* Placeholder image resembling the man in yellow shirt */}
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1537511446984-935f663eb1f4?q=80&w=200",
-          }}
-          style={styles.image}
-        />
+        <Image source={{ uri: service.thumbnail }} style={styles.image} />
       </View>
 
       <View style={styles.content}>
         <ThemedText type="title" style={styles.title}>
-          Washing
+          {service.title}
         </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Tewekoya, Make life Easy
-        </ThemedText>
+        <ThemedText style={styles.subtitle}>{service.subtitle}</ThemedText>
 
         <View style={styles.tagsRow}>
-          <View style={styles.tagLight}>
-            <ThemedText style={styles.tagTextTeal}>Subscription</ThemedText>
-          </View>
+          {/* Dynamically show Subscription tag only if a price exists */}
+          {service.pricing.subscriptionPrice > 0 && (
+            <View style={styles.tagLight}>
+              <ThemedText style={styles.tagTextTeal}>Subscription</ThemedText>
+            </View>
+          )}
+
           <View style={styles.tagDark}>
-            <ThemedText style={styles.tagTextWhite}>Onetime off</ThemedText>
+            <ThemedText style={styles.tagTextWhite}>One-time</ThemedText>
+          </View>
+
+          {/* Added Rating display */}
+          <View style={styles.ratingContainer}>
+            <ThemedText style={styles.ratingText}>
+              ★ {service.rating}
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -43,7 +51,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     padding: 4,
-    backgroundColor: "#F0F5F5", // Very light green bg ring
+    backgroundColor: "#F0F5F5",
     borderRadius: 16,
     marginRight: 15,
   },
@@ -51,7 +59,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 12,
-    backgroundColor: "#C8E6C9", // Fallback color
+    backgroundColor: "#C8E6C9",
   },
   content: {
     flex: 1,
@@ -71,18 +79,27 @@ const styles = StyleSheet.create({
   tagsRow: {
     flexDirection: "row",
     gap: 10,
+    alignItems: "center",
   },
   tagLight: {
-    backgroundColor: "#E8F3F1", // Light Teal BG
+    backgroundColor: "#E8F3F1",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
   },
   tagDark: {
-    backgroundColor: "#005D63", // Dark Teal BG
+    backgroundColor: "#005D63",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
+  },
+  ratingContainer: {
+    marginLeft: "auto",
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "#FBBC04",
   },
   tagTextTeal: {
     fontSize: 11,

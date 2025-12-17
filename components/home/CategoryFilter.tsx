@@ -1,9 +1,19 @@
 import { ThemedText } from "@/components/themed-text";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
-const categories = ["Services", "house", "laundry", "carwash", "construction"];
+// Matches categories in your services-data.ts
+// "All" is a special UI-only category
+const categories = ["All", "cleaning", "auto", "outdoor", "labor", "repair"];
 
-export function CategoryFilter() {
+interface CategoryFilterProps {
+  selectedCategory: string;
+  onSelectCategory: (category: string) => void;
+}
+
+export function CategoryFilter({
+  selectedCategory,
+  onSelectCategory,
+}: CategoryFilterProps) {
   return (
     <View style={styles.container}>
       <ScrollView
@@ -11,10 +21,15 @@ export function CategoryFilter() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
         {categories.map((category, index) => {
-          const isActive = index === 0; // "Services" is active
+          // Compare prop instead of internal state
+          const isActive =
+            selectedCategory.toLowerCase() === category.toLowerCase();
+
           return (
             <TouchableOpacity
               key={index}
+              onPress={() => onSelectCategory(category)}
+              activeOpacity={0.7}
               style={[
                 styles.button,
                 isActive ? styles.buttonActive : styles.buttonInactive,
@@ -40,20 +55,23 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingRight: 20,
-    gap: 12, // Increased gap for better touch targets
+    gap: 12,
   },
   button: {
     paddingHorizontal: 22,
-    paddingVertical: 12,
-    borderRadius: 25, // Fully rounded pills
+    paddingVertical: 10,
+    borderRadius: 30,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1,
   },
   buttonActive: {
-    backgroundColor: "#1F6C75", // Brand Teal
+    backgroundColor: "#005D63", // Deep Teal
+    borderColor: "#005D63",
   },
   buttonInactive: {
-    backgroundColor: "#E5E7EB", // Light Grey
+    backgroundColor: "#F5F7F7",
+    borderColor: "#E5E7EB",
   },
   text: {
     fontWeight: "600",
@@ -64,6 +82,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   textInactive: {
-    color: "#6B7280", // Darker Grey for contrast
+    color: "#6B7280",
   },
 });

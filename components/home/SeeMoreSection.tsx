@@ -1,88 +1,102 @@
 import { ThemedText } from "@/components/themed-text";
+import { SERVICES_DATA } from "@/constants/services-data";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
-import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const { width } = Dimensions.get("window");
 
-const services = [
-  {
-    id: 1,
-    title: "Laundry",
-    subtitle: "washing and Ironing",
-    image:
-      "https://images.unsplash.com/photo-1517677208171-0bc6799a4267?q=80&w=400",
-    route: "/service-options", // Links to the new Options page
-  },
-  {
-    id: 2,
-    title: "Car wash",
-    subtitle: "Interior and exterior",
-    image:
-      "https://images.unsplash.com/photo-1601362840469-51e4d8d58785?q=80&w=400",
-    route: "/service-detail",
-  },
-  {
-    id: 3,
-    title: "Gardening",
-    subtitle: "Compound work, digging",
-    image:
-      "https://images.unsplash.com/photo-1615811361269-89432d83663d?q=80&w=400",
-    route: "/service-detail",
-  },
-  {
-    id: 4,
-    title: "construction",
-    subtitle: "Site workers",
-    image:
-      "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=400",
-    route: "/service-detail",
-  },
-  {
-    id: 5,
-    title: "House Help",
-    subtitle: "Maids and house boys",
-    image:
-      "https://images.unsplash.com/photo-1581578731117-104f2a41272c?q=80&w=400",
-    route: "/service-detail",
-  },
-];
+interface SeeMoreSectionProps {
+  selectedCategory: string;
+}
 
-export function SeeMoreSection() {
+export function SeeMoreSection({ selectedCategory }: SeeMoreSectionProps) {
+  // 1. Filter Logic
+  const filteredServices =
+    selectedCategory === "All"
+      ? SERVICES_DATA
+      : SERVICES_DATA.filter(
+          (s) => s.category.toLowerCase() === selectedCategory.toLowerCase(),
+        );
+
+  // 2. Limit: Only show first 5 items on Home screen to keep it clean
+  const displayList = filteredServices.slice(0, 5);
+
   return (
     <View style={styles.container}>
-      <ThemedText type="subtitle" style={styles.sectionTitle}>
-        See more
-      </ThemedText>
+      {/* Header Row with "See All" Link */}
+      <View style={styles.headerRow}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          {selectedCategory === "All" ? "Recommended" : selectedCategory}
+        </ThemedText>
+
+        <Link href="/all-services" asChild>
+          <TouchableOpacity activeOpacity={0.7}>
+            <ThemedText style={styles.seeAllText}>See All</ThemedText>
+          </TouchableOpacity>
+        </Link>
+      </View>
 
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
-        {services.map((service) => (
-          <Link
-            key={service.id}
-            href={service.route as any} // Cast to any to avoid strict route typing issues during dev
-            asChild>
-            <View key={service.id} style={styles.card}>
-              <View style={styles.imageContainer}>
-                <Image source={{ uri: service.image }} style={styles.image} />
-                <View style={styles.iconOverlay}>
-                  <Ionicons name="bookmark-outline" size={16} color="white" />
-                </View>
-              </View>
+        {displayList.map((service) => {
+          // Route Logic
+          const routePath = service.hasSubCategories
+            ? "/service-options"
+            : "/service-detail";
 
-              <View style={styles.cardContent}>
-                <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                  {service.title}
-                </ThemedText>
-                <ThemedText style={styles.cardSubtitle}>
-                  {service.subtitle}
-                </ThemedText>
-              </View>
-            </View>
-          </Link>
-        ))}
+          return (
+            <Link
+              key={service.id}
+              href={{
+                pathname: routePath,
+                params: { id: service.id },
+              }}
+              asChild>
+              <TouchableOpacity style={styles.card} activeOpacity={0.9}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: service.thumbnail }}
+                    style={styles.image}
+                  />
+                  <View style={styles.iconOverlay}>
+                    <Ionicons name="bookmark-outline" size={16} color="white" />
+                  </View>
+                </View>
+
+                <View style={styles.cardContent}>
+                  <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+                    {service.title}
+                  </ThemedText>
+                  <ThemedText
+                    style={styles.cardSubtitle}
+                    numberOfLines={1}
+                    ellipsizeMode="tail">
+                    {service.subtitle}
+                  </ThemedText>
+                </View>
+              </TouchableOpacity>
+            </Link>
+          );
+        })}
+
+        {/* Empty State if category has no items */}
+        {displayList.length === 0 && (
+          <View style={styles.emptyState}>
+            <ThemedText style={styles.emptyText}>
+              No services found in this category.
+            </ThemedText>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -92,22 +106,32 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
   },
-  sectionTitle: {
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 15,
-    fontSize: 16,
-    color: "#9CA3AF",
-    fontWeight: "normal",
+    paddingRight: 20, // Align "See All" with content
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textTransform: "capitalize",
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: "#005D63", // Deep Teal
+    fontWeight: "600",
   },
   scrollContent: {
     paddingRight: 20,
-    gap: 15, // Space between cards
+    gap: 15,
   },
   card: {
-    width: width * 0.42, // Slightly less than half width to show it's scrollable
+    width: width * 0.42,
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     overflow: "hidden",
-    // Consistent Shadow
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
@@ -143,5 +167,16 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     fontSize: 12,
     color: "#9CA3AF",
+  },
+  emptyState: {
+    width: width - 40,
+    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F0F0F0",
+    borderRadius: 12,
+  },
+  emptyText: {
+    color: "#666",
   },
 });
