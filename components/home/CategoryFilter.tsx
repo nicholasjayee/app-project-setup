@@ -1,9 +1,8 @@
 import { ThemedText } from "@/components/themed-text";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
-// Matches categories in your services-data.ts
-// "All" is a special UI-only category
-const categories = ["All", "cleaning", "auto", "outdoor", "labor", "repair"];
+// Updated categories to match your screenshot
+const categories = ["Services", "house", "laundry", "carwash", "construction"];
 
 interface CategoryFilterProps {
   selectedCategory: string;
@@ -21,23 +20,27 @@ export function CategoryFilter({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}>
         {categories.map((category, index) => {
-          // Compare prop instead of internal state
-          const isActive =
+          // Logic: "Services" acts as the "All" button in this design
+          // If selectedCategory is "All" (default from index.tsx), we highlight "Services"
+          const isSelected =
+            (category === "Services" && selectedCategory === "All") ||
             selectedCategory.toLowerCase() === category.toLowerCase();
 
           return (
             <TouchableOpacity
               key={index}
-              onPress={() => onSelectCategory(category)}
+              onPress={() =>
+                onSelectCategory(category === "Services" ? "All" : category)
+              }
               activeOpacity={0.7}
               style={[
                 styles.button,
-                isActive ? styles.buttonActive : styles.buttonInactive,
+                isSelected ? styles.buttonActive : styles.buttonInactive,
               ]}>
               <ThemedText
                 style={[
                   styles.text,
-                  isActive ? styles.textActive : styles.textInactive,
+                  isSelected ? styles.textActive : styles.textInactive,
                 ]}>
                 {category}
               </ThemedText>
@@ -55,23 +58,20 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingRight: 20,
-    gap: 12,
+    gap: 10,
   },
   button: {
-    paddingHorizontal: 22,
+    paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 30,
+    borderRadius: 20, // Slightly less rounded than full pill
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
   },
   buttonActive: {
     backgroundColor: "#005D63", // Deep Teal
-    borderColor: "#005D63",
   },
   buttonInactive: {
-    backgroundColor: "#F5F7F7",
-    borderColor: "#E5E7EB",
+    backgroundColor: "#E5E7EB", // Light Grey
   },
   text: {
     fontWeight: "600",
@@ -82,6 +82,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   textInactive: {
-    color: "#6B7280",
+    color: "#9CA3AF", // Grey text
   },
 });
